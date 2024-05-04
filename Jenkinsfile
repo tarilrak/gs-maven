@@ -15,16 +15,7 @@ pipeline {
             steps {
                 sh 'mvn -B -DskipTests clean package' 
             }
-            post {
-                success {
-                    // If build succeeds, archive the build artifacts
-                    archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
-                }
-                failure {
-                    // If build fails, send a notification or take other actions
-                    echo 'Build failed! Please check the build logs.'
-                }
-            }
+            
         }
     }
     
