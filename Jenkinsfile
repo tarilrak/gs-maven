@@ -11,10 +11,9 @@ pipeline {
             }
         }
         
-        stage('Build and Compile') {
+        stage('Build') { 
             steps {
-                // Use Maven to build and compile the project
-                sh 'mvn clean compile'
+                sh 'mvn -B -DskipTests clean package' 
             }
             post {
                 success {
