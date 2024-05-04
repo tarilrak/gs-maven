@@ -54,7 +54,7 @@ mvn -v
 ----
 
 If all goes well, you should be presented with some information about the Maven installation. It will look similar to (although perhaps slightly different from) the following:
-
+hello world
 ....
 Apache Maven 3.3.9 (bb52d8502b132ec0a5a3f4c09453c07478323dc5; 2015-11-10T16:41:47+00:00)
 Maven home: /home/dsyer/Programs/apache-maven
