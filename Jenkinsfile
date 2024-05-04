@@ -1,44 +1,39 @@
 pipeline {
-	agent none
-
-	triggers {
-		pollSCM 'H/10 * * * *'
-	}
-
-	options {
-		disableConcurrentBuilds()
-		buildDiscarder(logRotator(numToKeepStr: '141'))
-	}
-
-	stages {
-		stage("test: baseline (jdk8)") {
-			agent {
-				docker {
-					image 'adoptopenjdk/openjdk8:latest'
-					args '-v $HOME/.m2:/tmp/jenkins-home/.m2'
-				}
-			}
-			options { timeout(time: 30, unit: 'MINUTES') }
-			steps {
-				sh 'test/run.sh'
-			}
-		}
-
-	}
-
-	post {
-		changed {
-			script {
-				slackSend(
-						color: (currentBuild.currentResult == 'SUCCESS') ? 'good' : 'danger',
-						channel: '#sagan-content',
-						message: "${currentBuild.fullDisplayName} - `${currentBuild.currentResult}`\n${env.BUILD_URL}")
-				emailext(
-						subject: "[${currentBuild.fullDisplayName}] ${currentBuild.currentResult}",
-						mimeType: 'text/html',
-						recipientProviders: [[$class: 'CulpritsRecipientProvider'], [$class: 'RequesterRecipientProvider']],
-						body: "<a href=\"${env.BUILD_URL}\">${currentBuild.fullDisplayName} is reported as ${currentBuild.currentResult}</a>")
-			}
-		}
-	}
+    agent any
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout code from Git repository
+                git branch: 'main',
+                    
+                    url: env.GIT_URL
+            }
+        }
+        
+        stage('Build and Compile') {
+            steps {
+                // Use Maven to build and compile the project
+                sh 'mvn package'
+            }
+            post {
+                success {
+                    // If build succeeds, archive the build artifacts
+                    archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
+                }
+                failure {
+                    // If build fails, send a notification or take other actions
+                    echo 'Build failed! Please check the build logs.'
+                }
+            }
+        }
+    }
+    
+    // Post-build actions (optional)
+    post {
+        always {
+            // Clean up workspace after the build is complete
+            cleanWs()
+        }
+    }
 }
